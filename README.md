@@ -48,7 +48,7 @@ rpi_cpuinfo_screen
 
 Now you can enter
 ```
-_rpi_cpuinfo_screen
+rpi_cpuinfo_screen
 ```
 on the command line
 
