@@ -91,15 +91,12 @@ func GetCPUTemp() string {
 	TEMP_FILE := "/sys/class/thermal/thermal_zone0/temp"
 	f, _ := os.Open(TEMP_FILE)
 
-	defer func() {
-		f.Close()
-	}()
-
 	var b []byte = make([]byte, 32)
 	n, err := f.Read(b)
 	if err != nil {
 		fmt.Printf("Open file->[%s] Failed", TEMP_FILE)
 	}
+	f.Close()               //close the file
 	data := string(b[:n-1]) // remove '\n' from the origin line
 	//fmt.Printf("temp = %s\n", data)
 
