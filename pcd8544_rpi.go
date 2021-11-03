@@ -5,10 +5,34 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	//"os/signal"
+
+	//"runtime/pprof"
 	"strconv"
 	"syscall"
 	"time"
 )
+
+/*
+//------------------------------
+//for cpu test
+var f *os.File
+
+func waitExit(c chan os.Signal) {
+	for i := range c {
+		switch i {
+		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+			fmt.Printf("receive exit signal -> %s", i.String())
+			f.Close()
+			pprof.StopCPUProfile()
+			os.Exit(0)
+		}
+	}
+}
+// -----------------
+//end cpu test
+*/
 
 func GetUpTime() int32 {
 	sysi := &syscall.Sysinfo_t{}
@@ -129,6 +153,21 @@ func main() {
 
 	fmt.Printf("Raspberry Pi Nokia5110 sysinfo display\n")
 
+	//CPU 性能分析
+	/*
+		// for cpu test
+		f, err := os.OpenFile("cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			fmt.Printf("Create file error ->[%s]\n", err.Error())
+			return
+		}
+		pprof.StartCPUProfile(f)
+
+		c := make(chan os.Signal)
+		//end cpu test
+		//-----------------
+	*/
+
 	//Init LCD
 	pin := LCDInit(SCLK, DIN, DC, CS, RST, BL, contrast)
 
@@ -194,5 +233,12 @@ func main() {
 		time.Sleep(1000)
 
 	}
+
+	/*
+		//before exit, cleanup something
+		//for cpu test
+		signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		waitExit(c)
+	*/
 
 }

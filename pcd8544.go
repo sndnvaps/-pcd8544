@@ -378,26 +378,41 @@ func LCDInit(SCLK, DIN, DC, CS, RST, BL, contrast uint8) (pin PCD8544_pin) {
 }
 
 func (pin PCD8544_pin) LCDCommand(cmd uint8) {
-	dcPin := rpio.Pin(pin._dc)
-	rpio.WritePin(dcPin, rpio.Low)
 	//dcPin.Low()
-	pin.LCDspiwrite(cmd)
+	pin.LCDspiwrite(0, cmd)
 }
 
-func (pin PCD8544_pin) LCDspiwrite(cmd uint8) {
+//往LCD写入数据
+//data_cmd: 1 -> 数据， 0 -> 命令
+//val： 需要写入的数据
+func (pin PCD8544_pin) LCDspiwrite(data_cmd uint8, val uint8) {
 	csPin := rpio.Pin(pin._cs)
 	dinPin := rpio.Pin(pin._din)
 	sclkPin := rpio.Pin(pin._sclk)
+	dcPin := rpio.Pin(pin._dc)
 	csPin.Low()
-	ShiftOut(dinPin, sclkPin, MSBFIRST, cmd)
+	if data_cmd == 1 { //写入数据
+		rpio.WritePin(dcPin, rpio.High)
+	} else { //写入命令
+		rpio.WritePin(dcPin, rpio.Low)
+	}
+	for i := 0; i < 8; i++ {
+		if (val & 0x80) == 0 {
+			rpio.WritePin(dinPin, rpio.Low)
+		} else {
+			rpio.WritePin(dinPin, rpio.High)
+		}
+		rpio.WritePin(sclkPin, rpio.Low)
+		val = val << 1
+		rpio.WritePin(sclkPin, rpio.High)
+	}
+
 	csPin.High()
 
 }
 
 func (pin PCD8544_pin) LCDData(c uint8) {
-	dcPin := rpio.Pin(pin._dc)
-	dcPin.High()
-	pin.LCDspiwrite(c)
+	pin.LCDspiwrite(1, c)
 }
 
 func (pin PCD8544_pin) LCDSetcontrast(val uint8) {
@@ -455,38 +470,6 @@ func LCDClear() {
 	}
 	cursor_y = 0
 	cursor_x = 0
-}
-
-func isTrue(val uint8) bool {
-	if val == 0 {
-		//fmt.Printf("isTrue -> val=%d\n",val)
-		return false
-	}
-	//fmt.Printf("isTrue -> val=%d\n",val)
-	return true
-}
-func bool2RpiState(val bool) rpio.State {
-	if val == true {
-		return rpio.High
-	}
-	return rpio.Low
-}
-
-func ShiftOut(dinPin rpio.Pin, sclkPin rpio.Pin, bitOrder uint8, val uint8) {
-	for i := 0; i < 8; i++ {
-		if bitOrder == LSBFIRST {
-			dinPin.Write(bool2RpiState(!!isTrue(val & (1 << i))))
-		} else {
-			dinPin.Write(bool2RpiState(!!isTrue(val & (1 << (7 - i)))))
-		}
-
-		sclkPin.Write(rpio.High)
-		for j := CLKCONST_2; j > 0; j-- {
-			sclkPin.Write(rpio.Low)
-		}
-
-	}
-
 }
 
 func _delay_ms(t uint32) {
