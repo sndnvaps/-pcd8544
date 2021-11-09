@@ -545,3 +545,78 @@ func LCDDrawchar(x uint8, y uint8, c byte) int {
 	return int(x + 6)
 
 }
+
+func LCDDrawPixel(x uint8, y uint8) {
+	pcd8544_buffer[y>>3][x] |= 1 << (y % 8)
+
+}
+
+func Swap(x *uint8, y *uint8) {
+
+	temp := *x
+	*x = *y
+	*y = temp
+}
+
+func Abs(n uint8) uint8 {
+	if n < 0 {
+		return (-n)
+	}
+	return n
+}
+
+func LCDDrawLine(x0 uint8, y0 uint8, x1 uint8, y1 uint8) {
+	var (
+		steep               bool
+		deltax, deltay, err uint8
+		x, y                uint8
+		ystep               int8
+	)
+
+	// simple clipping is done in the drawPixel routine
+	/*
+	   if (( x0 < 0) || (x0 > HRES)) return;
+	   if (( x1 < 0) || (x1 > HRES)) return;
+	   if (( y0 < 0) || (y0 > VRES)) return;
+	   if (( y1 < 0) || (y1 > VRES)) return;
+	*/
+
+	steep = Abs(y1-y0) > Abs(x1-x0)
+
+	if steep {
+		Swap(&x0, &y0)
+		Swap(&x1, &y1)
+	}
+
+	if x0 > x1 {
+		Swap(&x0, &x1)
+		Swap(&y0, &y1)
+	}
+
+	deltax = x1 - x0
+	deltay = Abs(y1 - y0)
+
+	err = 0
+	y = y0
+
+	if y0 < y1 {
+		ystep = 1
+	} else {
+		ystep = -1
+	}
+
+	for x = x0; x < x1; x++ {
+		if steep {
+			LCDDrawPixel(y, x)
+		} else {
+			LCDDrawPixel(x, y)
+		}
+		err += deltay
+
+		if (err << 1) >= deltax {
+
+			y += (uint8)(ystep)
+			err -= deltax
+		}
+	}
+}

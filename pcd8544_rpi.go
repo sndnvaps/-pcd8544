@@ -174,6 +174,7 @@ func main() {
 	LCDClear()
 
 	pin.LCDShowRpiLogo()
+	time.Sleep(4 * time.Second) // 4000ms -> 4s
 
 	for {
 		LCDClear()
@@ -221,16 +222,18 @@ func main() {
 		ram_load := (usedRam * 100) / totalRam
 		ramInfo := fmt.Sprintf("RAM %.3dM %.2d%s", usedRam, ram_load, "%")
 
-		LCDDrawString(0, 0, []byte(uptimeInfo))  //line0
-		LCDDrawString(0, 1, timeInfoBytes)       //line1
-		LCDDrawString(0, 2, []byte(cpuinfo))     //line2
-		LCDDrawString(0, 3, []byte(ramInfo))     //line3
-		LCDDrawString(0, 4, []byte(cpuTempInfo)) //line4
-		LCDDrawString(0, 5, ipInfo)              //line5
+		LCDDrawString(0, 0, ipInfo) //line0
+		LCDDrawLine(0, 8, 83, 8)
+		LCDDrawString(0, 1, []byte(uptimeInfo)) //line1
+		LCDDrawString(0, 2, timeInfoBytes)      //line2
+		LCDDrawString(0, 3, []byte(cpuinfo))    //line3
+		LCDDrawString(0, 4, []byte(ramInfo))    //line4
+
+		LCDDrawString(0, 5, []byte(cpuTempInfo)) //line5
 
 		pin.LCDDisplay()
 
-		time.Sleep(1000)
+		time.Sleep(4 * time.Second)
 
 	}
 
