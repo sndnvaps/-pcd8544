@@ -620,3 +620,17 @@ func LCDDrawLine(x0 uint8, y0 uint8, x1 uint8, y1 uint8) {
 		}
 	}
 }
+
+func LCDDrawVLine(x uint8, y uint8, h uint8) {
+	LCDDrawLine(x, y, x, y+h-1)
+}
+
+func LCDDrawHLine(x uint8, y uint8, w uint8) {
+	LCDDrawLine(x, y, x+w-1, y)
+}
+
+func LCDDrawTriangle(x1 uint8, y1 uint8, x2 uint8, y2 uint8, x3 uint8, y3 uint8) {
+	LCDDrawLine(x1, y1, x2, y2)
+	LCDDrawLine(x2, y2, x3, y3)
+	LCDDrawLine(x3, y3, x1, y1)
+}
