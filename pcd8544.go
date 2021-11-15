@@ -120,6 +120,11 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	for key, value := range FONTS {
+		dict.Set(byte(key)+0x20, value)
+	}
+	dict.Set(byte(0xb0), [5]byte{0x00, 0x06, 0x06, 0x00, 0x00}) // 0xb0 °
+
 }
 
 type PCD8544_pin struct {
@@ -131,8 +136,9 @@ type PCD8544_pin struct {
 	_bl   uint8
 }
 
-/** @array Charset */
+var dict *ByteDictionary = NewByteDictionary()
 
+/** @array Charset */
 var FONTS [][5]byte = [][5]byte{
 	{0x00, 0x00, 0x00, 0x00, 0x00}, // 20 space
 	{0x81, 0x81, 0x18, 0x81, 0x81}, // 21 !
@@ -230,6 +236,8 @@ var FONTS [][5]byte = [][5]byte{
 	{0x00, 0x41, 0x36, 0x08, 0x00}, // 7d }
 	{0x10, 0x08, 0x08, 0x10, 0x08}, // 7e ~
 	{0x00, 0x00, 0x00, 0x00, 0x00}, // 7f
+	//DB 00H,40H,00H,00H,00H,00H;"°",0 //b0 °
+	//{0x00,0x40,0x00,0x00,0x00}, //b0 °
 }
 
 const LCDWIDTH uint8 = 84
@@ -532,14 +540,15 @@ func LCDDrawchar(x uint8, y uint8, c byte) int {
 	if x+5 >= LCDWIDTH {
 		return 0
 	}
-	if c < 0x20 || c > 0x7f {
+	if c < 0x20 || c > 0xb3 {
 		// out of range
 		return 0
 	}
 	var i uint8
 	for i = 0; i < 5; i++ {
-		var charIndex int = int(c - 32)
-		pcd8544_buffer[y][x+i] = FONTS[charIndex][i]
+		charIndex := c
+		//pcd8544_buffer[y][x+i] = FONTS[charIndex][i]
+		pcd8544_buffer[y][x+i] = dict.Get(charIndex)[i]
 
 	}
 	return int(x + 6)

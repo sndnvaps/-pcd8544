@@ -10,6 +10,7 @@ import (
 
 	//"runtime/pprof"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -199,8 +200,9 @@ func main() {
 
 		//cputemp info
 		cpuTemp := GetCPUTemp()
+		cpuTemp = strings.TrimSpace(cpuTemp)
 		//fmt.Printf("cputemp = %s\n", cpuTemp)
-		cpuTempInfo := fmt.Sprintf("TEM %sC", cpuTemp)
+		cpuTempInfo := fmt.Sprintf("TEM %s°C", cpuTemp)
 		//fmt.Println(ip.String())
 
 		//cpuinfo
