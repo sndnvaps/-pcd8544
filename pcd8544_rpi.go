@@ -16,6 +16,29 @@ import (
 )
 
 /*
+=====================================================
+ Name: PCD8544_rpi.go
+ Version: 0.2
+ Copyright (C) 2021 sndnvaps<sndnvaps@gmail.com>
+
+  Description :
+     A simple PCD8544 LCD (Nokia3310/5110) for Raspberry Pi for displaying some system informations.
+         Makes use of go-rpio of  Stian Eikeland (https://github.com/stianeikeland/go-rpio)
+
+         Recommended connection (http://www.raspberrypi.org/archives/384):
+         LCD pins          Raspberry Pi  GPIO
+         LCD1 - GND        P06  -        GND
+         LCD2 - VCC        P01 -         3.3V
+         LCD3 - CLK        P11 -         GPIO17
+         LCD4 - Din        P12 -         GPIO18
+         LCD5 - D/C        P13 -         GPIO27
+         LCD6 - CS         P15 -         GPIO22
+         LCD7 - RST        P16 -         GPIO23
+         LCD8 - LED        P01 -         3.3V
+		 LCD9 - BlackLight P07 -         GPIO4
+======================================================
+*/
+/*
 //------------------------------
 //for cpu test
 var f *os.File

@@ -128,12 +128,12 @@ func init() {
 }
 
 type PCD8544_pin struct {
-	_din  uint8
-	_sclk uint8
-	_dc   uint8
-	_rst  uint8
-	_cs   uint8
-	_bl   uint8
+	PDIN  rpio.Pin
+	PSCLk rpio.Pin
+	PDC   rpio.Pin
+	PRST  rpio.Pin
+	PCS   rpio.Pin
+	PBL   rpio.Pin
 }
 
 var dict *ByteDictionary = NewByteDictionary()
@@ -307,34 +307,29 @@ var pi_logo []byte = []byte{
 }
 
 func LCDInit(SCLK, DIN, DC, CS, RST, BL, contrast uint8) (pin PCD8544_pin) {
-	_din := DIN
-	_sclk := SCLK
-	_dc := DC
-	_rst := RST
-	_cs := CS
-	_bl := BL
+
 	_contrast := contrast
 
+	dinPin := rpio.Pin(DIN)
+	sclkPin := rpio.Pin(SCLK)
+	dcPin := rpio.Pin(DC)
+	rstPin := rpio.Pin(RST)
+	csPin := rpio.Pin(CS)
+	blPin := rpio.Pin(BL)
+
 	pin = PCD8544_pin{
-		_din:  _din,
-		_sclk: _sclk,
-		_dc:   _dc,
-		_rst:  _rst,
-		_cs:   _cs,
-		_bl:   _bl,
+		PDIN:  dinPin,
+		PSCLk: sclkPin,
+		PDC:   dcPin,
+		PRST:  rstPin,
+		PCS:   csPin,
+		PBL:   blPin,
 	}
 
 	cursor_x = 0
 	cursor_y = 0
 	textsize = 1
 	textcolor = BLACK
-
-	dinPin := rpio.Pin(_din)
-	sclkPin := rpio.Pin(_sclk)
-	dcPin := rpio.Pin(_dc)
-	rstPin := rpio.Pin(_rst)
-	csPin := rpio.Pin(_cs)
-	blPin := rpio.Pin(_bl)
 
 	//set output mode
 	dinPin.Output()
@@ -348,7 +343,8 @@ func LCDInit(SCLK, DIN, DC, CS, RST, BL, contrast uint8) (pin PCD8544_pin) {
 	blPin.High()
 
 	// toggle RST low to reset; CS low so it'll listen to us
-	if _cs > 0 {
+	//Read pin state (high/low)
+	if csPin.Read() > 0 {
 		csPin.Low()
 	}
 
@@ -394,28 +390,25 @@ func (pin PCD8544_pin) LCDCommand(cmd uint8) {
 //data_cmd: 1 -> 数据， 0 -> 命令
 //val： 需要写入的数据
 func (pin PCD8544_pin) LCDspiwrite(data_cmd uint8, val uint8) {
-	csPin := rpio.Pin(pin._cs)
-	dinPin := rpio.Pin(pin._din)
-	sclkPin := rpio.Pin(pin._sclk)
-	dcPin := rpio.Pin(pin._dc)
-	csPin.Low()
+
+	pin.PCS.Low()
 	if data_cmd == 1 { //写入数据
-		rpio.WritePin(dcPin, rpio.High)
+		rpio.WritePin(pin.PDC, rpio.High)
 	} else { //写入命令
-		rpio.WritePin(dcPin, rpio.Low)
+		rpio.WritePin(pin.PDC, rpio.Low)
 	}
 	for i := 0; i < 8; i++ {
 		if (val & 0x80) == 0 {
-			rpio.WritePin(dinPin, rpio.Low)
+			rpio.WritePin(pin.PDIN, rpio.Low)
 		} else {
-			rpio.WritePin(dinPin, rpio.High)
+			rpio.WritePin(pin.PDIN, rpio.High)
 		}
-		rpio.WritePin(sclkPin, rpio.Low)
+		rpio.WritePin(pin.PSCLk, rpio.Low)
 		val = val << 1
-		rpio.WritePin(sclkPin, rpio.High)
+		rpio.WritePin(pin.PSCLk, rpio.High)
 	}
 
-	csPin.High()
+	pin.PCS.High()
 
 }
 
